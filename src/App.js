@@ -6,7 +6,7 @@ import HomePage from "./components/pages/homepage/homepage.component";
 import ShopPage from "./components/pages/shop/shop.component.jsx";
 import SignInAndSignIpPage from "./components/pages/sign-in-and-sign-up/sign-in-and-sign-up.component.jsx";
 import Header from "./components/header/header.component.jsx";
-import { auth } from "./firebase/firebase.utils";
+import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
 
 // const HatsPage = () => (
 //   <div>
@@ -26,24 +26,40 @@ class App extends React.Component {
     };
   }
 
-  unsubscribeFromAuth = null
+  unsubscribeFromAuth = null;
 
   componentDidMount() {
-    this.unsubscribeFromAuth = auth.onAuthStateChanged((user) => {
-      this.setState({ currentUser: user });
-      console.log(user);
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
+
+        userRef.onSnapshot((snapShot) => {
+          // console.log(snapShot.data())
+          this.setState({
+            currentUser: {
+              id: snapShot.id,
+              ...snapShot.data(),
+            },
+          }, () => {
+            console.log(this.state)
+          });
+        });
+      }
+      this.setState({ currentUser: userAuth });
+      // createUserProfileDocument(user)
+      // console.log(user);
     });
   }
 
   componentWillUnmount() {
-    this.unsubscribeFromAuth()
+    this.unsubscribeFromAuth();
   }
 
   render() {
     return (
       //by putting the header outside of the switch we can render it at all times no matter what.
       <div>
-        <Header currentUser={this.state.currentUser}/>
+        <Header currentUser={this.state.currentUser} />
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/shop" component={ShopPage} />
