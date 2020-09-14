@@ -1,12 +1,15 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
+import { connect } from "react-redux";
+
 import "./App.css";
 
 import HomePage from "./components/pages/homepage/homepage.component";
 import ShopPage from "./components/pages/shop/shop.component.jsx";
-import SignInAndSignIpPage from "./components/pages/sign-in-and-sign-up/sign-in-and-sign-up.component.jsx";
+import SignInAndSignUpPage from "./components/pages/sign-in-and-sign-up/sign-in-and-sign-up.component.jsx";
 import Header from "./components/header/header.component.jsx";
 import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
+import { setCurrentUser } from "./redux/user/user.actions";
 
 // const HatsPage = () => (
 //   <div>
@@ -18,34 +21,30 @@ import { auth, createUserProfileDocument } from "./firebase/firebase.utils";
 //switch is useful because it gives us more control over code. not accidentaly render something we don;t want to.
 
 class App extends React.Component {
-  constructor() {
-    super();
-
-    this.state = {
-      currentUser: null,
-    };
-  }
+  // constructor() {
+  //   super();
+  //   this.state = {
+  //     currentUser: null,
+  //   };
+  // }      !!!! constructor, super and state no longer needed because we used redux
 
   unsubscribeFromAuth = null;
 
   componentDidMount() {
+    const { setCurrentUser } = this.props;
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth);
 
         userRef.onSnapshot((snapShot) => {
           // console.log(snapShot.data())
-          this.setState({
-            currentUser: {
-              id: snapShot.id,
-              ...snapShot.data(),
-            },
-          }, () => {
-            console.log(this.state)
+          setCurrentUser({
+            id: snapShot.id,
+            ...snapShot.data(),
           });
         });
       }
-      this.setState({ currentUser: userAuth });
+      setCurrentUser(userAuth);
       // createUserProfileDocument(user)
       // console.log(user);
     });
@@ -59,15 +58,35 @@ class App extends React.Component {
     return (
       //by putting the header outside of the switch we can render it at all times no matter what.
       <div>
-        <Header currentUser={this.state.currentUser} />
+        <Header
+        // currentUser={this.state.currentUser}
+        />
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route path="/shop" component={ShopPage} />
-          <Route path="/signin" component={SignInAndSignIpPage} />
+          <Route
+            exact
+            path="/signin"
+            render={() =>
+              this.props.currentUser ? (
+                <Redirect to="/" />
+              ) : (
+                <SignInAndSignUpPage />
+              )
+            }
+          />
         </Switch>
       </div>
     );
   }
 }
 
-export default App;
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  setCurrentUser: (user) => dispatch(setCurrentUser(user)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
