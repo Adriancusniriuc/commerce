@@ -9,6 +9,7 @@ const middlewares = [];
 if(process.env.NODE_ENV === 'development') {
   middlewares.push(logger)
 }
+//this is so the redux logger does not appear in deployment
 
 export const store = createStore(rootReducer, applyMiddleware(...middlewares));
 
