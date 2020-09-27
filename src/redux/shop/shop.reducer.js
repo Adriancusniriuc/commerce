@@ -1,21 +1,40 @@
-import SHOP_DATA from './shop.data'
-
-import ShopActionTypes from '../../components/pages/shop/shop.types'
+import ShopActionTypes from "../../components/pages/shop/shop.types";
 
 const INITIAL_STATE = {
-  collections: SHOP_DATA
-}
+  collections: null
+};
 
-const shopReducer = (state = INITIAL_STATE, action) =>{
-  switch(action.type) {
+const shopReducer = (state = INITIAL_STATE, action) => {
+  switch (action.type) {
     case ShopActionTypes.UPDATE_COLLECTIONS:
       return {
         ...state,
-        collections:action.payload
-      }
+        collections: action.payload
+      };
     default:
-      return state
+      return state;
   }
-} 
+};
 
-export default shopReducer 
+export default shopReducer;
+// import SHOP_DATA from "./shop.data";
+
+// import ShopActionTypes from "../../components/pages/shop/shop.types";
+
+// const INITIAL_STATE = {
+//   collections: SHOP_DATA,
+// };
+
+// const shopReducer = (state = INITIAL_STATE, action) => {
+//   switch (action.type) {
+//     case ShopActionTypes.UPDATE_COLLECTIONS:
+//       return {
+//         ...state,
+//         collections: action.payload,
+//       };
+//     default:
+//       return state;
+//   }
+// };
+
+// export default shopReducer;
